@@ -70,3 +70,4 @@ O script facilita sua vida criando comandos curtos:
 
 **Criado por:** [GabrielDaSilva17](https://www.google.com/search?q=https://github.com/GabrielDaSilva17)
 *Otimizando o Termux para o próximo nível.*
+
