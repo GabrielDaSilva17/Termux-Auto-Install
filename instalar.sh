@@ -5,7 +5,7 @@
 # ==========================================
 
 # VERSÃO DO SCRIPT (Para o sistema de update funcionar)
-VERSION="3.3"
+VERSION="0.3.4"
 
 # Cores
 VERDE="\e[92m"; AMARELO="\e[33m"; CIANO="\e[36m"; VERMELHO="\e[31m"; RESET="\e[0m"; NEGRITO="\e[1m"; ROXO="\e[35m"
