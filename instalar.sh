@@ -5,7 +5,7 @@
 # ==========================================
 
 # VERSÃO DO SCRIPT (Para o sistema de update funcionar)
-VERSION="0.3.4"
+VERSION="0.3.5"
 
 # Cores
 VERDE="\e[92m"; AMARELO="\e[33m"; CIANO="\e[36m"; VERMELHO="\e[31m"; RESET="\e[0m"; NEGRITO="\e[1m"; ROXO="\e[35m"
@@ -163,5 +163,7 @@ clear
 echo -e "${VERDE}${NEGRITO}INSTALAÇÃO COMPLETA! (v$VERSION)${RESET}"
 echo -e "${VERDE}[✓]${RESET} Mensagens de 'Done' Removidas"
 echo " "
+echo "# =========================================="
+echo "# GABRIEL-TERMUX ULTRA EDITION 2026 (CLEAN)"
+echo "# =========================================="
 echo "Reinicie o Termux."
-echo "final"
