@@ -207,6 +207,8 @@ sleep 15
 clear
 echo -e "${VERDE}${NEGRITO}INSTALAÇÃO COMPLETA! v$VERSION${RESET}"
 echo -e "${VERDE}[✓]${RESET} Script Blindado"
+echo -e "${VERDE}[✓]${RESET} code-server "
+
 echo -e "${AMARELO}${NEGRITO}============================================${RESET}"
 echo -e "\n${ROXO} [ GABRIEL-TERMUX v${VERSION} ]${RESET}\n"
 echo -e "${AMARELO}${NEGRITO}============================================${RESET}"
