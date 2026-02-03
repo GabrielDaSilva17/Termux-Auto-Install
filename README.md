@@ -1,4 +1,4 @@
-# 🚀 Gabriel-Termux Auto-Install
+# 🚀 Termux Auto-Install
 
 Este repositório contém um script de automação para configurar rapidamente o ambiente de desenvolvimento no **Termux**. Ele instala as ferramentas essenciais para programação em Python, C/C++, suporte a interface gráfica (X11) e utilitários de sistema.
 
