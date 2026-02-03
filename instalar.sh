@@ -213,4 +213,9 @@ echo -e "${AMARELO}${NEGRITO}============================================${RESET
 echo " "
 echo "Reinicie o Termux."
 echo -e "${AMARELO}${NEGRITO}ESPERANDO.......................${RESET}"
-exit
+
+sleep 10
+cls
+
+source ~/.bashrc
+
