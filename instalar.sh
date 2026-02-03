@@ -5,7 +5,7 @@
 # ==========================================
 
 # VERSÃO DO SCRIPT (Para o sistema de update funcionar)
-VERSION="3.1"
+VERSION="3.2"
 
 # Cores
 VERDE="\e[92m"; AMARELO="\e[33m"; CIANO="\e[36m"; VERMELHO="\e[31m"; RESET="\e[0m"; NEGRITO="\e[1m"; ROXO="\e[35m"
@@ -19,6 +19,9 @@ sleep 1
 
 # Salva a versão atual no sistema
 echo "$VERSION" > ~/.gabriel_version
+
+# CORREÇÃO: Repara pacotes quebrados antes de começar
+dpkg --configure -a > /dev/null 2>&1
 
 # Função para executar comandos silenciosamente
 run_silent() {
@@ -48,18 +51,31 @@ else
     echo -e "${VERDE}OK (Via Ruby)${RESET}"
 fi
 
-# 3. INSTALAÇÃO DE PACOTES
+# 3. INSTALAÇÃO DE PACOTES (COM VERIFICAÇÃO CORRIGIDA)
 install_pkg_clean() {
     pkg_name=$1
-    if dpkg -s "$pkg_name" &> /dev/null; then return; fi
+    # CORREÇÃO: Só pula se estiver REALMENTE instalado (Status: install ok installed)
+    # Isso evita pular pacotes quebrados
+    if dpkg -s "$pkg_name" 2>/dev/null | grep -q "Status: install ok installed"; then 
+        return 
+    fi
+    
     echo -ne "${CIANO}Instalando $pkg_name... ${RESET}"
     pkg install "$pkg_name" -y > /dev/null 2>&1
-    if [ $? -eq 0 ]; then echo -e "${VERDE}Concluído${RESET}"; else echo -e "${VERMELHO}Erro${RESET}"; pkg install "$pkg_name" -y; fi
+    
+    if [ $? -eq 0 ]; then 
+        echo -e "${VERDE}Concluído${RESET}"
+    else 
+        echo -e "${VERMELHO}Erro${RESET}"
+        # Tenta de novo mostrando o erro na tela para debug
+        pkg install "$pkg_name" -y
+    fi
 }
 
 echo -e "\n${AMARELO}>>> Instalando Ferramentas${RESET}"
+# CORREÇÃO: Removido 'python-pip' para evitar conflito (python já traz o pip)
 packages=(
-    "figlet" "ncurses-utils" "git" "python" "python-pip" 
+    "figlet" "ncurses-utils" "git" "python" 
     "clang" "make" "cmake" "binutils" "curl" "wget" "perl" "ruby" 
     "php" "nodejs" "bash" "nano" "zip" "unzip" "openssl" "openssh" 
     "zsh" "ffmpeg" "htop" "screen" "jq" "rsync" "tree" "termux-api" 
@@ -76,7 +92,8 @@ run_silent "Instalando Drivers SDL2" "pkg install sdl2 -y"
 
 # 5. CONFIGURAÇÕES FINAIS
 echo -e "\n${AMARELO}>>> Finalizando Ajustes${RESET}"
-run_silent "Atualizando PIP" "pip install --upgrade pip"
+# Garante que o pip está presente antes de atualizar
+run_silent "Configurando PIP" "python -m ensurepip --default-pip >/dev/null 2>&1; pip install --upgrade pip"
 run_silent "Instalando yt-dlp" "pip install yt-dlp"
 run_silent "Instalando Speedtest" "pip install speedtest-cli"
 run_silent "Configurando SSH" "sshd"
