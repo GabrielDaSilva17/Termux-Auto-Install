@@ -121,6 +121,7 @@ else
     echo -e "${VERMELHO}Erro (Tente manual)${RESET}"
 fi
 
+
 sshd >/dev/null 2>&1
 ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc >/dev/null 2>&1
 
