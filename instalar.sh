@@ -1,62 +1,72 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 # ==========================================
-# GABRIEL-TERMUX ULTRA EDITION 2026 (FIX)
+# GABRIEL-TERMUX ULTRA EDITION 2026 (CLEAN)
 # ==========================================
 
 # Cores
 VERDE="\e[92m"; AMARELO="\e[33m"; CIANO="\e[36m"; VERMELHO="\e[31m"; RESET="\e[0m"; NEGRITO="\e[1m"; ROXO="\e[35m"
 
-# Título
+# Título Limpo
 clear
 echo -e "${AMARELO}${NEGRITO}============================================${RESET}"
 echo -e "\n${ROXO} [ GABRIEL-TERMUX ULTRA EDITION 2026 ]${RESET}\n"
 echo -e "${AMARELO}${NEGRITO}============================================${RESET}"
 sleep 1
 
-# 1. CORREÇÃO CRÍTICA DE REPOSITÓRIOS
-# O erro anterior ocorria porque o x11-repo era instalado mas não lido
-echo -e "${CIANO}Configurando repositórios X11...${RESET}"
-termux-change-repo << EOF
-OK
-EOF
-
-# Instala os repositórios PRIMEIRO
-pkg install x11-repo termux-api game-repo -y
-
-# ATUALIZA A LISTA AGORA (Isso corrige o erro 'Unable to locate')
-echo -e "${AMARELO}Sincronizando novos repositórios...${RESET}"
-pkg update -y
-
-# 2. INSTALAÇÃO DO LOLCAT (Visual)
-echo -ne "${AMARELO}Checando cores... ${RESET}"
-if pkg install lolcat -y > /dev/null 2>&1; then
-    echo -e "${VERDE}OK (Pkg)${RESET}"
-else
-    echo -e "${AMARELO}Usando Ruby...${RESET}"
-    pkg install ruby -y > /dev/null 2>&1
-    gem install lolcat > /dev/null 2>&1
-fi
-
-# 3. FUNÇÃO DE INSTALAÇÃO
-install_package() {
-    pkg_name=$1
-    echo -ne "${AMARELO}Checando $pkg_name... ${RESET}"
-    if dpkg -s "$pkg_name" &> /dev/null; then
-        echo -e "${VERDE}OK ✅${RESET}"
+# Função para executar comandos silenciosamente com feedback visual
+run_silent() {
+    echo -ne "${CIANO}$1... ${RESET}"
+    eval "$2" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${VERDE}OK${RESET}"
     else
-        pkg install "$pkg_name" -y > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            echo -e "${VERDE}Instalado${RESET}"
-        else
-            echo -e "${VERMELHO}Erro (Tentando novamente...)${RESET}"
-            pkg install "$pkg_name" -y
-        fi
+        echo -e "${VERMELHO}Falha (Tentando corrigir...)${RESET}"
+        eval "$2" # Tenta rodar de novo mostrando erro se falhar
     fi
 }
 
-# 4. LISTA DE PACOTES
-# Removi termux-x11 e sdl2 daqui para instalar com comando especial abaixo
+# 1. REPOSITÓRIOS (Totalmente Silencioso)
+echo -e "\n${AMARELO}>>> Configurando Base do Sistema${RESET}"
+run_silent "Configurando Repositórios" "termux-change-repo << EOF
+OK
+EOF"
+run_silent "Ativando X11 e Root Repos" "pkg install x11-repo termux-api game-repo -y"
+run_silent "Atualizando Pacotes (Isso demora um pouco)" "pkg update -y"
+
+# 2. LOLCAT (Visual)
+echo -ne "${AMARELO}Verificando Cores... ${RESET}"
+if pkg install lolcat -y > /dev/null 2>&1; then
+    echo -e "${VERDE}OK${RESET}"
+else
+    pkg install ruby -y > /dev/null 2>&1
+    gem install lolcat > /dev/null 2>&1
+    echo -e "${VERDE}OK (Via Ruby)${RESET}"
+fi
+
+# 3. FUNÇÃO DE INSTALAÇÃO DE PACOTES (Minimalista)
+install_pkg_clean() {
+    pkg_name=$1
+    # Verifica antes para não poluir a tela
+    if dpkg -s "$pkg_name" &> /dev/null; then
+        return # Se já existe, não mostra nada, mantém limpo
+    fi
+    
+    echo -ne "${CIANO}Instalando $pkg_name... ${RESET}"
+    pkg install "$pkg_name" -y > /dev/null 2>&1
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${VERDE}Concluído${RESET}"
+    else
+        echo -e "${VERMELHO}Erro${RESET}"
+        # Tenta de novo visível apenas se falhar
+        pkg install "$pkg_name" -y
+    fi
+}
+
+# 4. LOOP DE INSTALAÇÃO
+echo -e "\n${AMARELO}>>> Instalando Ferramentas${RESET}"
+# Se o pacote já tiver, ele pula silenciosamente. Se não, mostra instalando.
 packages=(
     "figlet" "ncurses-utils" "git" "python" "python-pip" 
     "clang" "make" "cmake" "binutils" "curl" "wget" "perl" "ruby" 
@@ -67,25 +77,21 @@ packages=(
 )
 
 for pkg in "${packages[@]}"; do
-    install_package "$pkg"
+    install_pkg_clean "$pkg"
 done
 
-# 5. INSTALAÇÃO ESPECIAL X11 (Forçando o reconhecimento)
-echo -e "${CIANO}Instalando Interface Gráfica (X11/SDL2)...${RESET}"
-# Tenta o pacote normal, se falhar tenta o nightly
-if ! pkg install termux-x11 -y; then
-    pkg install termux-x11-nightly -y
-fi
-pkg install sdl2 -y
+# 5. INSTALAÇÃO X11/SDL2
+echo -e "\n${AMARELO}>>> Configurando Interface Gráfica${RESET}"
+run_silent "Instalando Termux-X11" "pkg install termux-x11 -y || pkg install termux-x11-nightly -y"
+run_silent "Instalando Drivers SDL2" "pkg install sdl2 -y"
 
 # Configurações Finais
-echo -e "${CIANO}Finalizando...${RESET}"
-pip install --upgrade pip > /dev/null 2>&1
-pip install yt-dlp speedtest-cli > /dev/null 2>&1
-sshd > /dev/null 2>&1
-ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc > /dev/null 2>&1
+echo -e "\n${AMARELO}>>> Finalizando Ajustes${RESET}"
+run_silent "Atualizando PIP e Python Libs" "pip install --upgrade pip && pip install yt-dlp speedtest-cli"
+run_silent "Configurando SSH" "sshd"
+run_silent "Linkando Compiladores" "ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc"
 
-# 6. CONFIGURAÇÃO VISUAL PERMANENTE
+# 6. CONFIGURAÇÃO VISUAL (.bashrc)
 echo "" > ~/.bashrc
 
 cat << 'EOF' >> ~/.bashrc
@@ -98,7 +104,7 @@ alias limpar='rm -rf ~/.termux/shell_history'
 
 clear
 
-# 1. BANNER QUADRADO
+# 1. BANNER
 draw_banner() {
     if command -v lolcat &> /dev/null; then
         echo "╔═══════════════════════════════════════════════════════════╗" | lolcat
@@ -132,7 +138,6 @@ source ~/.bashrc
 # Tela Final
 clear
 echo -e "${VERDE}${NEGRITO}INSTALAÇÃO COMPLETA!${RESET}"
-echo -e "${VERDE}[✓]${RESET} Repositórios Sincronizados"
-echo -e "${VERDE}[✓]${RESET} X11 e SDL2 Corrigidos"
+echo -e "${VERDE}[✓]${RESET} Sistema Limpo e Configurado"
 echo " "
 echo "Reinicie o Termux."
