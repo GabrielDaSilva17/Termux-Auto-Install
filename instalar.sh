@@ -4,17 +4,23 @@
 # GABRIEL-TERMUX ULTRA EDITION 2026 (CLEAN)
 # ==========================================
 
+# VERSÃO DO SCRIPT (Para o sistema de update funcionar)
+VERSION="3.1"
+
 # Cores
 VERDE="\e[92m"; AMARELO="\e[33m"; CIANO="\e[36m"; VERMELHO="\e[31m"; RESET="\e[0m"; NEGRITO="\e[1m"; ROXO="\e[35m"
 
 # Título Limpo
 clear
 echo -e "${AMARELO}${NEGRITO}============================================${RESET}"
-echo -e "\n${ROXO} [ GABRIEL-TERMUX ULTRA EDITION 2026 ]${RESET}\n"
+echo -e "\n${ROXO} [ GABRIEL-TERMUX v${VERSION} ]${RESET}\n"
 echo -e "${AMARELO}${NEGRITO}============================================${RESET}"
 sleep 1
 
-# Função para executar comandos silenciosamente com feedback visual
+# Salva a versão atual no sistema
+echo "$VERSION" > ~/.gabriel_version
+
+# Função para executar comandos silenciosamente
 run_silent() {
     echo -ne "${CIANO}$1... ${RESET}"
     eval "$2" > /dev/null 2>&1
@@ -22,19 +28,17 @@ run_silent() {
         echo -e "${VERDE}OK${RESET}"
     else
         echo -e "${VERMELHO}Falha (Tentando corrigir...)${RESET}"
-        eval "$2" # Tenta rodar de novo mostrando erro se falhar
+        eval "$2"
     fi
 }
 
-# 1. REPOSITÓRIOS (Sem forçar troca de mirror)
+# 1. REPOSITÓRIOS
 echo -e "\n${AMARELO}>>> Configurando Base do Sistema${RESET}"
-# Removido termux-change-repo para evitar erros de configuração desnecessários
-run_silent "Atualizando Pacotes (Isso demora um pouco)" "pkg update -y"
+run_silent "Atualizando Pacotes" "pkg update -y"
 run_silent "Ativando X11 e Root Repos" "pkg install x11-repo termux-api game-repo -y"
-# Atualiza de novo para garantir que os novos repositórios sejam lidos
 run_silent "Sincronizando Novos Repositórios" "pkg update -y"
 
-# 2. LOLCAT (Visual)
+# 2. LOLCAT
 echo -ne "${AMARELO}Verificando Cores... ${RESET}"
 if pkg install lolcat -y > /dev/null 2>&1; then
     echo -e "${VERDE}OK${RESET}"
@@ -44,29 +48,16 @@ else
     echo -e "${VERDE}OK (Via Ruby)${RESET}"
 fi
 
-# 3. FUNÇÃO DE INSTALAÇÃO DE PACOTES (Minimalista)
+# 3. INSTALAÇÃO DE PACOTES
 install_pkg_clean() {
     pkg_name=$1
-    # Verifica antes para não poluir a tela
-    if dpkg -s "$pkg_name" &> /dev/null; then
-        return # Se já existe, não mostra nada, mantém limpo
-    fi
-    
+    if dpkg -s "$pkg_name" &> /dev/null; then return; fi
     echo -ne "${CIANO}Instalando $pkg_name... ${RESET}"
     pkg install "$pkg_name" -y > /dev/null 2>&1
-    
-    if [ $? -eq 0 ]; then
-        echo -e "${VERDE}Concluído${RESET}"
-    else
-        echo -e "${VERMELHO}Erro${RESET}"
-        # Tenta de novo visível apenas se falhar
-        pkg install "$pkg_name" -y
-    fi
+    if [ $? -eq 0 ]; then echo -e "${VERDE}Concluído${RESET}"; else echo -e "${VERMELHO}Erro${RESET}"; pkg install "$pkg_name" -y; fi
 }
 
-# 4. LOOP DE INSTALAÇÃO
 echo -e "\n${AMARELO}>>> Instalando Ferramentas${RESET}"
-# Se o pacote já tiver, ele pula silenciosamente. Se não, mostra instalando.
 packages=(
     "figlet" "ncurses-utils" "git" "python" "python-pip" 
     "clang" "make" "cmake" "binutils" "curl" "wget" "perl" "ruby" 
@@ -76,24 +67,22 @@ packages=(
     "proot" "proot-distro" "tsu" "man" "vim" "proxychains-ng"
 )
 
-for pkg in "${packages[@]}"; do
-    install_pkg_clean "$pkg"
-done
+for pkg in "${packages[@]}"; do install_pkg_clean "$pkg"; done
 
-# 5. INSTALAÇÃO X11/SDL2
+# 4. INSTALAÇÃO X11/SDL2
 echo -e "\n${AMARELO}>>> Configurando Interface Gráfica${RESET}"
 run_silent "Instalando Termux-X11" "pkg install termux-x11 -y || pkg install termux-x11-nightly -y"
 run_silent "Instalando Drivers SDL2" "pkg install sdl2 -y"
 
-# Configurações Finais
+# 5. CONFIGURAÇÕES FINAIS
 echo -e "\n${AMARELO}>>> Finalizando Ajustes${RESET}"
 run_silent "Atualizando PIP" "pip install --upgrade pip"
-run_silent "Instalando yt-dlp (Downloader)" "pip install yt-dlp"
+run_silent "Instalando yt-dlp" "pip install yt-dlp"
 run_silent "Instalando Speedtest" "pip install speedtest-cli"
 run_silent "Configurando SSH" "sshd"
 run_silent "Linkando Compiladores" "ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc"
 
-# 6. CONFIGURAÇÃO VISUAL (.bashrc)
+# 6. CONFIGURAÇÃO VISUAL E UPDATE SYSTEM (.bashrc)
 echo "" > ~/.bashrc
 
 cat << 'EOF' >> ~/.bashrc
@@ -103,6 +92,9 @@ alias fechar='pkill termux-x11'
 alias ssh-on='sshd && ifconfig | grep inet'
 alias cls='clear'
 alias limpar='rm -rf ~/.termux/shell_history'
+
+# ATALHO PARA ATUALIZAR O SCRIPT
+alias atualizar-setup='curl -fsSL https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh | bash'
 
 clear
 
@@ -121,15 +113,26 @@ draw_banner() {
 draw_banner
 
 # 2. STATUS
-check() {
-    if command -v $1 &> /dev/null; then echo -e "\033[1;32mON\033[0m"; else echo -e "\033[1;31mOFF\033[0m"; fi
-}
-
+check() { if command -v $1 &> /dev/null; then echo -e "\033[1;32mON\033[0m"; else echo -e "\033[1;31mOFF\033[0m"; fi }
 echo -e "    \033[1;33mPYTHON:\033[0m $(check python)   \033[1;33mNODE:\033[0m $(check node)   \033[1;33mSSH:\033[0m $(check sshd)"
 echo -e "    \033[1;33mCLANG :\033[0m $(check clang)   \033[1;33mGIT :\033[0m $(check git)    \033[1;33mX11:\033[0m $(check termux-x11)"
 echo " "
 
-# 3. ANDROID INFO
+# 3. VERIFICADOR DE ATUALIZAÇÃO (Roda em background)
+(
+    REMOTE_URL="https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh"
+    LOCAL_VER=$(cat ~/.gabriel_version 2>/dev/null || echo "0")
+    
+    # Baixa apenas o cabeçalho para ver a versão
+    REMOTE_VER=$(curl -s $REMOTE_URL | grep "VERSION=" | head -n 1 | cut -d'"' -f2)
+    
+    if [ "$REMOTE_VER" != "$LOCAL_VER" ] && [ ! -z "$REMOTE_VER" ]; then
+         echo -e "\n\033[1;32m[!] NOVA ATUALIZAÇÃO DISPONÍVEL ($REMOTE_VER)!\033[0m"
+         echo -e "Digite \033[1;33matualizar-setup\033[0m para instalar.\n"
+    fi
+) &
+
+# 4. ANDROID INFO
 neofetch --ascii_distro android --disable packages shell term resolution
 
 export PS1='\[\e[1;32m\]Gabriel\[\e[0m\]@\[\e[1;34m\]Termux\[\e[0m\]:\[\e[1;33m\]\w\[\e[0m\] $ '
@@ -139,7 +142,7 @@ source ~/.bashrc
 
 # Tela Final
 clear
-echo -e "${VERDE}${NEGRITO}INSTALAÇÃO COMPLETA!${RESET}"
-echo -e "${VERDE}[✓]${RESET} Sistema Limpo e Configurado"
+echo -e "${VERDE}${NEGRITO}INSTALAÇÃO COMPLETA! (v$VERSION)${RESET}"
+echo -e "${VERDE}[✓]${RESET} Sistema de Auto-Update Ativado"
 echo " "
 echo "Reinicie o Termux."
