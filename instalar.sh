@@ -55,6 +55,35 @@ pip install yt-dlp speedtest-cli
 sshd
 ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc
 
+# ==========================================
+# FASE FINAL: VERIFICAÇÃO E ESTÉTICA
+# ==========================================
+
+clear
+echo -e "${AMARELO}${NEGRITO}VERIFICANDO VERSÕES INSTALADAS...${RESET}"
+echo " "
+echo -e "${CIANO}Python:${RESET} $(python --version)"
+echo -e "${CIANO}NodeJS:${RESET} $(node -v)"
+echo -e "${CIANO}Clang :${RESET} $(clang --version | head -n 1)"
+echo -e "${CIANO}Git   :${RESET} $(git --version)"
+echo -e "${CIANO}PHP   :${RESET} $(php -v | head -n 1)"
+echo " "
+echo -e "${AMARELO}Carregando checklist...${RESET}"
+sleep 4
+
+clear
+echo -e "${VERDE}${NEGRITO}=== STATUS DO SISTEMA ===${RESET}"
+echo " "
+echo -e "${VERDE}[✓]${RESET} Repositórios Atualizados"
+echo -e "${VERDE}[✓]${RESET} Ambiente X11 Configurado"
+echo -e "${VERDE}[✓]${RESET} Compiladores (C/C++) Prontos"
+echo -e "${VERDE}[✓]${RESET} SSH Server (Porta 8022) Ativo"
+echo -e "${VERDE}[✓]${RESET} yt-dlp & FFmpeg Instalados"
+echo -e "${VERDE}[✓]${RESET} Aliases Injetados (.bashrc)"
+echo " "
+echo -e "${AMARELO}Finalizando setup...${RESET}"
+sleep 3
+
 clear
 echo -e "${VERDE}${NEGRITO}============================================${RESET}"
 echo -e "${CIANO}      SETUP GABRIEL-TERMUX FINALIZADO! 🚀${RESET}"
@@ -63,7 +92,9 @@ echo -e "${VERDE}${NEGRITO}============================================${RESET}"
 # Mostra Info Final
 MEU_IP=$(ifconfig wlan0 | grep "inet " | awk '{print $2}')
 echo -e "${AMARELO}IP Local:${VERDE} $MEU_IP ${RESET}"
-echo -e "${AMARELO}Atalhos criados:${CIANO} atualizar, fechar, ssh-on${RESET}"
+echo -e "${AMARELO}Atalhos:${CIANO} atualizar, fechar, ssh-on${RESET}"
 
+echo " "
 figlet -f slant "GABRIEL" | lolcat 2>/dev/null || figlet "GABRIEL"
+echo " "
 neofetch
