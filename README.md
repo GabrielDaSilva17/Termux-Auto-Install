@@ -32,4 +32,4 @@ O script executa uma configuração completa dividida em camadas:
 Abra o seu Termux e cole o comando abaixo:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/GabrielDaSilva17/test-termux/main/instalar.sh| bash
+curl -fsSL https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh | bash
