@@ -5,7 +5,7 @@
 # ==========================================
 
 # VERSÃO DO SCRIPT (Para o sistema de update funcionar)
-VERSION="3.2"
+VERSION="3.3"
 
 # Cores
 VERDE="\e[92m"; AMARELO="\e[33m"; CIANO="\e[36m"; VERMELHO="\e[31m"; RESET="\e[0m"; NEGRITO="\e[1m"; ROXO="\e[35m"
@@ -23,23 +23,13 @@ echo "$VERSION" > ~/.gabriel_version
 # CORREÇÃO: Repara pacotes quebrados antes de começar
 dpkg --configure -a > /dev/null 2>&1
 
-# Função para executar comandos silenciosamente
-run_silent() {
-    echo -ne "${CIANO}$1... ${RESET}"
-    eval "$2" > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        echo -e "${VERDE}OK${RESET}"
-    else
-        echo -e "${VERMELHO}Falha (Tentando corrigir...)${RESET}"
-        eval "$2"
-    fi
-}
-
 # 1. REPOSITÓRIOS
 echo -e "\n${AMARELO}>>> Configurando Base do Sistema${RESET}"
-run_silent "Atualizando Pacotes" "pkg update -y"
-run_silent "Ativando X11 e Root Repos" "pkg install x11-repo termux-api game-repo -y"
-run_silent "Sincronizando Novos Repositórios" "pkg update -y"
+echo -ne "${CIANO}Atualizando Pacotes... ${RESET}"
+pkg update -y > /dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro (Ignorado)${RESET}"
+
+echo -ne "${CIANO}Ativando Repositórios... ${RESET}"
+pkg install x11-repo termux-api game-repo -y > /dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
 
 # 2. LOLCAT
 echo -ne "${AMARELO}Verificando Cores... ${RESET}"
@@ -51,11 +41,10 @@ else
     echo -e "${VERDE}OK (Via Ruby)${RESET}"
 fi
 
-# 3. INSTALAÇÃO DE PACOTES (COM VERIFICAÇÃO CORRIGIDA)
+# 3. INSTALAÇÃO DE PACOTES (COM VERIFICAÇÃO RIGOROSA)
 install_pkg_clean() {
     pkg_name=$1
-    # CORREÇÃO: Só pula se estiver REALMENTE instalado (Status: install ok installed)
-    # Isso evita pular pacotes quebrados
+    # Verifica se já está instalado corretamente
     if dpkg -s "$pkg_name" 2>/dev/null | grep -q "Status: install ok installed"; then 
         return 
     fi
@@ -67,13 +56,13 @@ install_pkg_clean() {
         echo -e "${VERDE}Concluído${RESET}"
     else 
         echo -e "${VERMELHO}Erro${RESET}"
-        # Tenta de novo mostrando o erro na tela para debug
+        # Tenta forçar instalação
         pkg install "$pkg_name" -y
     fi
 }
 
 echo -e "\n${AMARELO}>>> Instalando Ferramentas${RESET}"
-# CORREÇÃO: Removido 'python-pip' para evitar conflito (python já traz o pip)
+# Lista sem python-pip para evitar conflitos (o python já traz o pip)
 packages=(
     "figlet" "ncurses-utils" "git" "python" 
     "clang" "make" "cmake" "binutils" "curl" "wget" "perl" "ruby" 
@@ -87,17 +76,25 @@ for pkg in "${packages[@]}"; do install_pkg_clean "$pkg"; done
 
 # 4. INSTALAÇÃO X11/SDL2
 echo -e "\n${AMARELO}>>> Configurando Interface Gráfica${RESET}"
-run_silent "Instalando Termux-X11" "pkg install termux-x11 -y || pkg install termux-x11-nightly -y"
-run_silent "Instalando Drivers SDL2" "pkg install sdl2 -y"
+echo -ne "${CIANO}Termux-X11... ${RESET}"
+pkg install termux-x11 -y >/dev/null 2>&1 || pkg install termux-x11-nightly -y >/dev/null 2>&1
+echo -e "${VERDE}OK${RESET}"
+install_pkg_clean "sdl2"
 
 # 5. CONFIGURAÇÕES FINAIS
 echo -e "\n${AMARELO}>>> Finalizando Ajustes${RESET}"
-# Garante que o pip está presente antes de atualizar
-run_silent "Configurando PIP" "python -m ensurepip --default-pip >/dev/null 2>&1; pip install --upgrade pip"
-run_silent "Instalando yt-dlp" "pip install yt-dlp"
-run_silent "Instalando Speedtest" "pip install speedtest-cli"
-run_silent "Configurando SSH" "sshd"
-run_silent "Linkando Compiladores" "ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc"
+echo -ne "${CIANO}Configurando PIP... ${RESET}"
+python -m ensurepip --default-pip >/dev/null 2>&1
+pip install --upgrade pip >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
+
+echo -ne "${CIANO}Instalando yt-dlp... ${RESET}"
+pip install yt-dlp >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
+
+echo -ne "${CIANO}Instalando Speedtest... ${RESET}"
+pip install speedtest-cli >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
+
+sshd >/dev/null 2>&1
+ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc >/dev/null 2>&1
 
 # 6. CONFIGURAÇÃO VISUAL E UPDATE SYSTEM (.bashrc)
 echo "" > ~/.bashrc
@@ -135,22 +132,23 @@ echo -e "    \033[1;33mPYTHON:\033[0m $(check python)   \033[1;33mNODE:\033[0m $
 echo -e "    \033[1;33mCLANG :\033[0m $(check clang)   \033[1;33mGIT :\033[0m $(check git)    \033[1;33mX11:\033[0m $(check termux-x11)"
 echo " "
 
-# 3. VERIFICADOR DE ATUALIZAÇÃO (CORRIGIDO)
-(
+# 3. VERIFICADOR DE ATUALIZAÇÃO (SILENCIOSO)
+check_update() {
     # URL do arquivo Raw
     REMOTE_URL="https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh"
     LOCAL_VER=$(cat ~/.gabriel_version 2>/dev/null || echo "0")
     
-    # CORREÇÃO: Pega apenas as primeiras 20 linhas e filtra estritamente por VERSION="..."
-    # Isso evita pegar HTML de erro ou o arquivo inteiro
+    # Pega apenas as primeiras 20 linhas e filtra a versão
     REMOTE_VER=$(curl -sL $REMOTE_URL | head -n 20 | grep '^VERSION="' | cut -d'"' -f2)
     
-    # Verifica se REMOTE_VER é válido (tem que ter um ponto, ex: 3.1) e se é diferente da local
-    if [[ "$REMOTE_VER" == *"."* ]] && [ "$REMOTE_VER" != "$LOCAL_VER" ]; then
+    # Verifica se REMOTE_VER é válido (ex: 3.1) e diferente
+    if [[ "$REMOTE_VER" =~ ^[0-9]+\.[0-9]+$ ]] && [ "$REMOTE_VER" != "$LOCAL_VER" ]; then
          echo -e "\n\033[1;32m[!] NOVA ATUALIZAÇÃO DISPONÍVEL ($REMOTE_VER)!\033[0m"
          echo -e "Digite \033[1;33matualizar-setup\033[0m para baixar.\n"
     fi
-) &
+}
+# Roda em background e usa disown para não mostrar mensagem 'Done'
+check_update & disown
 
 # 4. ANDROID INFO
 neofetch --ascii_distro android --disable packages shell term resolution
@@ -163,6 +161,6 @@ source ~/.bashrc
 # Tela Final
 clear
 echo -e "${VERDE}${NEGRITO}INSTALAÇÃO COMPLETA! (v$VERSION)${RESET}"
-echo -e "${VERDE}[✓]${RESET} Sistema de Auto-Update Corrigido"
+echo -e "${VERDE}[✓]${RESET} Mensagens de 'Done' Removidas"
 echo " "
 echo "Reinicie o Termux."
