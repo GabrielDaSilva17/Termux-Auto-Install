@@ -61,6 +61,7 @@ O script facilita sua vida criando comandos curtos:
 | `cls` | Limpa a tela (alternativa ao clear). |
 | `atualizar-setup` | atualizado termux por completo |
 | `acodex` | AcodeX - Terminal.|
+| `code-server` | termux para o PC |
 
 ## 🔑 Pós-Instalação
 
