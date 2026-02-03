@@ -60,7 +60,7 @@ O script facilita sua vida criando comandos curtos:
 | `fechar` | Encerra processos travados do servidor X11. |
 | `cls` | Limpa a tela (alternativa ao clear). |
 | `atualizar-setup` | atualizado termux por completo |
-| `axs` | Install axs cli binary.|
+| `acodex` | AcodeX - Terminal.|
 
 ## 🔑 Pós-Instalação
 
