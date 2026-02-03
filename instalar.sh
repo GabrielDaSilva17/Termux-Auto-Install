@@ -25,87 +25,71 @@ echo -e "${AMARELO}Otimizando repositórios...${RESET}"
 pkg update -y && pkg upgrade -y
 pkg install x11-repo termux-api -y
 
-# Super Lista de Pacotes
+# Lista de pacotes essenciais (Incluindo neofetch e lolcat)
 packages=(
     "git" "python" "python-pip" "clang" "make" "cmake" "binutils" 
     "curl" "wget" "perl" "ruby" "php" "nodejs" "bash" "nano" 
     "zip" "unzip" "openssl" "openssh" "zsh" "ffmpeg" "htop" 
     "screen" "jq" "rsync" "tree" "termux-api" "termux-x11" "sdl2"
     "neofetch" "cmatrix" "figlet" "cowsay" "fortune" "sl" "ranger"
-    "proot" "proot-distro" "tsu" "man" "vim" "proxychains-ng"
+    "proot" "proot-distro" "tsu" "man" "vim" "proxychains-ng" "lolcat"
 )
 
 for pkg in "${packages[@]}"; do
     install_package "$pkg"
 done
 
-# --- Configurações Extras e Banner Permanente ---
-echo -e "${CIANO}Configurando Aliases e Banner Permanente...${RESET}"
+# --- CONFIGURAÇÃO DO INÍCIO (BANNER + ANDROID INFO) ---
+echo -e "${CIANO}Configurando Banner Gabriel + Info Android...${RESET}"
 
-# Aliases úteis
+# 1. Cria o arquivo se não existir
+touch ~/.bashrc
+
+# 2. LIMPEZA TOTAL: Remove configurações antigas para não duplicar
+sed -i '/figlet/d' ~/.bashrc
+sed -i '/neofetch/d' ~/.bashrc
+sed -i '/lolcat/d' ~/.bashrc
+sed -i '/clear/d' ~/.bashrc
+sed -i '/alias/d' ~/.bashrc
+
+# 3. Injeta os Aliases (Atalhos)
 echo "alias atualizar='pkg update && pkg upgrade -y'" >> ~/.bashrc
 echo "alias fechar='pkill termux-x11'" >> ~/.bashrc
 echo "alias ssh-on='sshd && ifconfig | grep inet'" >> ~/.bashrc
 echo "alias limpar='rm -rf ~/.termux/shell_history'" >> ~/.bashrc
 
-# INJETANDO O BANNER 'GABRIEL' NO INÍCIO DO TERMUX
-# Verifica se já existe para não duplicar linhas
-if ! grep -q "figlet.*GABRIEL" ~/.bashrc; then
-    echo "clear" >> ~/.bashrc
-    echo 'figlet -f slant "GABRIEL" | lolcat 2>/dev/null || figlet "GABRIEL"' >> ~/.bashrc
-    echo "echo ' '" >> ~/.bashrc
-fi
+# 4. INJETA O BANNER NOVO
+# O comando 'neofetch --ascii_distro android' força o boneco do Android
+cat << 'EOF' >> ~/.bashrc
+clear
+figlet -f slant "GABRIEL" | lolcat
+echo " "
+neofetch --ascii_distro android
+EOF
 
-# --- Instalação do yt-dlp e ferramentas Python ---
-echo -e "${CIANO}Instalando ferramentas Python modernas...${RESET}"
+# Recarrega as configurações
+source ~/.bashrc 2>/dev/null
+
+# --- Instalações Finais ---
 pip install --upgrade pip
 pip install yt-dlp speedtest-cli
 
-# --- Setup SSH ---
 sshd
 ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc
 
 # ==========================================
-# FASE FINAL: VERIFICAÇÃO E ESTÉTICA
+# FASE FINAL
 # ==========================================
-
 clear
-echo -e "${AMARELO}${NEGRITO}VERIFICANDO VERSÕES INSTALADAS...${RESET}"
+echo -e "${VERDE}${NEGRITO}=== TUDO PRONTO! ===${RESET}"
+echo -e "${VERDE}[✓]${RESET} Banner Colorido Configurado"
+echo -e "${VERDE}[✓]${RESET} Info do Android Configurada"
 echo " "
-echo -e "${CIANO}Python:${RESET} $(python --version)"
-echo -e "${CIANO}NodeJS:${RESET} $(node -v)"
-echo -e "${CIANO}Clang :${RESET} $(clang --version | head -n 1)"
-echo -e "${CIANO}Git   :${RESET} $(git --version)"
-echo -e "${CIANO}PHP   :${RESET} $(php -v | head -n 1)"
-echo " "
-echo -e "${AMARELO}Carregando checklist...${RESET}"
-sleep 4
+echo -e "${AMARELO}Reinicie o Termux para ver o resultado final!${RESET}"
+sleep 2
 
+# Teste imediato na tela
 clear
-echo -e "${VERDE}${NEGRITO}=== STATUS DO SISTEMA ===${RESET}"
+figlet -f slant "GABRIEL" | lolcat
 echo " "
-echo -e "${VERDE}[✓]${RESET} Repositórios Atualizados"
-echo -e "${VERDE}[✓]${RESET} Ambiente X11 Configurado"
-echo -e "${VERDE}[✓]${RESET} Compiladores (C/C++) Prontos"
-echo -e "${VERDE}[✓]${RESET} SSH Server (Porta 8022) Ativo"
-echo -e "${VERDE}[✓]${RESET} yt-dlp & FFmpeg Instalados"
-echo -e "${VERDE}[✓]${RESET} Banner 'GABRIEL' Configurado no Boot"
-echo " "
-echo -e "${AMARELO}Finalizando setup...${RESET}"
-sleep 3
-
-clear
-echo -e "${VERDE}${NEGRITO}============================================${RESET}"
-echo -e "${CIANO}      SETUP GABRIEL-TERMUX FINALIZADO! 🚀${RESET}"
-echo -e "${VERDE}${NEGRITO}============================================${RESET}"
-
-# Mostra Info Final
-MEU_IP=$(ifconfig wlan0 | grep "inet " | awk '{print $2}')
-echo -e "${AMARELO}IP Local:${VERDE} $MEU_IP ${RESET}"
-echo -e "${AMARELO}Atalhos:${CIANO} atualizar, fechar, ssh-on${RESET}"
-
-echo " "
-# Mostra o banner agora para confirmar
-figlet -f slant "GABRIEL" | lolcat 2>/dev/null || figlet "GABRIEL"
-echo " "
-neofetch
+neofetch --ascii_distro android
