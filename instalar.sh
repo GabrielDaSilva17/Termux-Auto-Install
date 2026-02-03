@@ -1,11 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 # ==========================================
-# GABRIEL-TERMUX ULTRA EDITION 2026 (CLEAN)
+# GABRIEL-TERMUX ULTRA EDITION 2026 (FIX)
 # ==========================================
 
 # VERSÃO DO SCRIPT
-VERSION="0.3.6"
+VERSION="0.3.7"
 
 # Cores
 VERDE="\e[92m"; AMARELO="\e[33m"; CIANO="\e[36m"; VERMELHO="\e[31m"; RESET="\e[0m"; NEGRITO="\e[1m"; ROXO="\e[35m"
@@ -26,10 +26,18 @@ dpkg --configure -a > /dev/null 2>&1
 # 1. REPOSITÓRIOS
 echo -e "\n${AMARELO}>>> Configurando Base do Sistema${RESET}"
 echo -ne "${CIANO}Atualizando Pacotes... ${RESET}"
-pkg update -y > /dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro (Ignorado)${RESET}"
+if pkg update -y > /dev/null 2>&1; then
+    echo -e "${VERDE}OK${RESET}"
+else
+    echo -e "${VERMELHO}Erro (Ignorado)${RESET}"
+fi
 
 echo -ne "${CIANO}Ativando Repositórios... ${RESET}"
-pkg install x11-repo termux-api game-repo -y > /dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
+if pkg install x11-repo termux-api game-repo -y > /dev/null 2>&1; then
+    echo -e "${VERDE}OK${RESET}"
+else
+    echo -e "${VERMELHO}Erro${RESET}"
+fi
 
 # 2. LOLCAT
 echo -ne "${AMARELO}Verificando Cores... ${RESET}"
@@ -49,7 +57,12 @@ install_pkg_clean() {
     fi
     echo -ne "${CIANO}Instalando $pkg_name... ${RESET}"
     pkg install "$pkg_name" -y > /dev/null 2>&1
-    if [ $? -eq 0 ]; then echo -e "${VERDE}Concluído${RESET}"; else echo -e "${VERMELHO}Erro${RESET}"; pkg install "$pkg_name" -y; fi
+    if [ $? -eq 0 ]; then 
+        echo -e "${VERDE}Concluído${RESET}"
+    else 
+        echo -e "${VERMELHO}Erro${RESET}"
+        pkg install "$pkg_name" -y
+    fi
 }
 
 echo -e "\n${AMARELO}>>> Instalando Ferramentas${RESET}"
@@ -67,8 +80,11 @@ for pkg in "${packages[@]}"; do install_pkg_clean "$pkg"; done
 # 4. INSTALAÇÃO X11/SDL2
 echo -e "\n${AMARELO}>>> Configurando Interface Gráfica${RESET}"
 echo -ne "${CIANO}Termux-X11... ${RESET}"
-pkg install termux-x11 -y >/dev/null 2>&1 || pkg install termux-x11-nightly -y >/dev/null 2>&1
-echo -e "${VERDE}OK${RESET}"
+if pkg install termux-x11 -y >/dev/null 2>&1 || pkg install termux-x11-nightly -y >/dev/null 2>&1; then
+    echo -e "${VERDE}OK${RESET}"
+else
+    echo -e "${VERMELHO}Erro${RESET}"
+fi
 install_pkg_clean "sdl2"
 
 # 5. CONFIGURAÇÕES FINAIS
@@ -76,18 +92,34 @@ echo -e "\n${AMARELO}>>> Finalizando Ajustes${RESET}"
 
 echo -ne "${CIANO}Configurando PIP... ${RESET}"
 python -m ensurepip --default-pip >/dev/null 2>&1
-pip install --upgrade pip >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
+if pip install --upgrade pip >/dev/null 2>&1; then
+    echo -e "${VERDE}OK${RESET}"
+else
+    echo -e "${VERMELHO}Erro${RESET}"
+fi
 
 echo -ne "${CIANO}Instalando yt-dlp... ${RESET}"
-pip install yt-dlp >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
+if pip install yt-dlp >/dev/null 2>&1; then
+    echo -e "${VERDE}OK${RESET}"
+else
+    echo -e "${VERMELHO}Erro${RESET}"
+fi
 
 echo -ne "${CIANO}Instalando Speedtest... ${RESET}"
-pip install speedtest-cli >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
+if pip install speedtest-cli >/dev/null 2>&1; then
+    echo -e "${VERDE}OK${RESET}"
+else
+    echo -e "${VERMELHO}Erro${RESET}"
+fi
 
 # Instalação do AcodeX Server
 echo -ne "${CIANO}AcodeX - Terminal... ${RESET}"
 curl -sL https://raw.githubusercontent.com/bajrangCoder/acode-plugin-acodex/main/installServer.sh | bash > /dev/null 2>&1
-if [ $? -eq 0 ]; then echo -e "${VERDE}OK${RESET}"; else echo -e "${VERMELHO}Erro (Manual req.)${RESET}"; fi
+if [ $? -eq 0 ]; then 
+    echo -e "${VERDE}OK${RESET}"
+else 
+    echo -e "${VERMELHO}Erro (Manual req.)${RESET}"
+fi
 
 sshd >/dev/null 2>&1
 ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc >/dev/null 2>&1
@@ -124,7 +156,14 @@ draw_banner() {
 draw_banner
 
 # 2. STATUS
-check() { if command -v $1 &> /dev/null; then echo -e "\033[1;32mON\033[0m"; else echo -e "\033[1;31mOFF\033[0m"; fi }
+check() {
+    if command -v $1 &> /dev/null; then
+        echo -e "\033[1;32mON\033[0m"
+    else
+        echo -e "\033[1;31mOFF\033[0m"
+    fi
+}
+
 echo -e "    \033[1;33mPYTHON:\033[0m $(check python)   \033[1;33mNODE:\033[0m $(check node)   \033[1;33mSSH:\033[0m $(check sshd)"
 echo -e "    \033[1;33mCLANG :\033[0m $(check clang)   \033[1;33mGIT :\033[0m $(check git)    \033[1;33mX11:\033[0m $(check termux-x11)"
 echo -e "    \033[1;33mACODEX:\033[0m $(check acodex-server)"
@@ -163,105 +202,7 @@ echo -e "${AMARELO}${NEGRITO}============================================${RESET
 echo "Reinicie o Termux."
 
 
-    echo -e "${VERDE}OK${RESET}"
-else
-    pkg install ruby -y > /dev/null 2>&1
-    gem install lolcat > /dev/null 2>&1
-    echo -e "${VERDE}OK (Via Ruby)${RESET}"
-fi
-
-# 3. INSTALAÇÃO DE PACOTES (COM VERIFICAÇÃO RIGOROSA)
-install_pkg_clean() {
-    pkg_name=$1
-    # Verifica se já está instalado corretamente
-    if dpkg -s "$pkg_name" 2>/dev/null | grep -q "Status: install ok installed"; then 
-        return 
-    fi
-    
-    echo -ne "${CIANO}Instalando $pkg_name... ${RESET}"
-    pkg install "$pkg_name" -y > /dev/null 2>&1
-    
-    if [ $? -eq 0 ]; then 
-        echo -e "${VERDE}Concluído${RESET}"
-    else 
-        echo -e "${VERMELHO}Erro${RESET}"
-        # Tenta forçar instalação
-        pkg install "$pkg_name" -y
-    fi
-}
-
-echo -e "\n${AMARELO}>>> Instalando Ferramentas${RESET}"
-# Lista sem python-pip para evitar conflitos (o python já traz o pip)
-packages=(
-    "figlet" "ncurses-utils" "git" "python" 
-    "clang" "make" "cmake" "binutils" "curl" "wget" "perl" "ruby" 
-    "php" "nodejs" "bash" "nano" "zip" "unzip" "openssl" "openssh" 
-    "zsh" "ffmpeg" "htop" "screen" "jq" "rsync" "tree" "termux-api" 
-    "neofetch" "cmatrix" "cowsay" "fortune" "sl" "ranger" 
-    "proot" "proot-distro" "tsu" "man" "vim" "proxychains-ng"
-)
-
-for pkg in "${packages[@]}"; do install_pkg_clean "$pkg"; done
-
-# 4. INSTALAÇÃO X11/SDL2
-echo -e "\n${AMARELO}>>> Configurando Interface Gráfica${RESET}"
-echo -ne "${CIANO}Termux-X11... ${RESET}"
-pkg install termux-x11 -y >/dev/null 2>&1 || pkg install termux-x11-nightly -y >/dev/null 2>&1
-echo -e "${VERDE}OK${RESET}"
-install_pkg_clean "sdl2"
-
-# 5. CONFIGURAÇÕES FINAIS
-echo -e "\n${AMARELO}>>> Finalizando Ajustes${RESET}"
-echo -ne "${CIANO}Configurando PIP... ${RESET}"
-python -m ensurepip --default-pip >/dev/null 2>&1
-pip install --upgrade pip >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
-
-echo -ne "${CIANO}Instalando yt-dlp... ${RESET}"
-pip install yt-dlp >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
-
-echo -ne "${CIANO}Instalando Speedtest... ${RESET}"
-pip install speedtest-cli >/dev/null 2>&1 && echo -e "${VERDE}OK${RESET}" || echo -e "${VERMELHO}Erro${RESET}"
-
-echo -ne "${CIANO}AcodeX - Terminal... ${RESET}"
-curl -sL https://raw.githubusercontent.com/bajrangCoder/acode-plugin-acodex/main/installServer.sh | bash
-
-
-sshd >/dev/null 2>&1
-ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc >/dev/null 2>&1
-
-# 6. CONFIGURAÇÃO VISUAL E UPDATE SYSTEM (.bashrc)
-echo "" > ~/.bashrc
-
-cat << 'EOF' >> ~/.bashrc
-# --- GABRIEL CONFIG ---
-alias atualizar='pkg update && pkg upgrade -y'
-alias fechar='pkill termux-x11'
-alias ssh-on='sshd && ifconfig | grep inet'
-alias cls='clear'
-alias limpar='rm -rf ~/.termux/shell_history'
-
-# ATALHO PARA ATUALIZAR O SCRIPT
-alias atualizar-setup='curl -fsSL https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh | bash'
-
-clear
-
-# 1. BANNER
-draw_banner() {
-    if command -v lolcat &> /dev/null; then
-        echo "╔═══════════════════════════════════════════════════════════╗" | lolcat
-        figlet -f slant "   GABRIEL   " | lolcat
-        echo "╚═══════════════════════════════════════════════════════════╝" | lolcat
-    else
-        echo "-------------------------------------------------------------"
-        figlet -f slant "   GABRIEL   "
-        echo "-------------------------------------------------------------"
-    fi
-}
-draw_banner
-
-# 2. STATUS
-check() { if command -v $1 &> /dev/null; then echo -e "\033[1;32mON\033[0m"; else echo -e "\033[1;31mOFF\033[0m"; fi }
-echo -e "    \033[1;33mPYTHON:\033[0m $(check python)   \033[1;33mNODE:\033[0m $(check node)   \033[1;33mSSH:\033[0m $(check sshd)"
+   \033[1;33mPYTHON:\033[0m $(check python)   \033[1;33mNODE:\033[0m $(check node)   \033[1;33mSSH:\033[0m $(check sshd)"
 echo -e "    \033[1;33mCLANG :\033[0m $(check clang)   \033[1;33mGIT :\033[0m $(check git)    \033[1;33mX11:\033[0m $(check termux-x11)"
 echo -e "    \033[1;33mCLANG :\033[0m $(check axs)"
 echo " "
