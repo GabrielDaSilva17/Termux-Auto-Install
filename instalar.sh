@@ -1,16 +1,20 @@
-#!/bin/bash
+#!/data/data/com.termux/files/usr/bin/bash
 
-echo "Iniciando a automação de instalação..."
+echo "--- Iniciando Automação GabrielDaSilva17 ---"
 
-# Atualiza a lista de pacotes
-pkg update && pkg upgrade -y  # No Termux use pkg, no Ubuntu use sudo apt update
+# Atualiza os repositórios
+pkg update -y && pkg upgrade -y
 
-# Lista de ferramentas para instalar
-TOOLS=("python" "clang" "gcc" "git" "make")
+# Lista de ferramentas
+# Nota: No Termux, o 'clang' é o compilador C padrão que substitui o gcc
+TOOLS=("python" "clang" "git" "make" "binutils")
 
 for tool in "${TOOLS[@]}"; do
-    echo "Instalando $tool..."
+    echo "Instalando: $tool..."
     pkg install "$tool" -y
 done
 
-echo "Tudo pronto! Python, C e compiladores instalados."
+# Criando um atalho para o 'gcc' usar o 'clang' (comum no Termux)
+ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc
+
+echo "--- Instalação Finalizada com Sucesso! ---"
