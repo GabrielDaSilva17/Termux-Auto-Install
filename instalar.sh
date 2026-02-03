@@ -26,13 +26,13 @@ run_silent() {
     fi
 }
 
-# 1. REPOSITÓRIOS (Totalmente Silencioso)
+# 1. REPOSITÓRIOS (Sem forçar troca de mirror)
 echo -e "\n${AMARELO}>>> Configurando Base do Sistema${RESET}"
-run_silent "Configurando Repositórios" "termux-change-repo << EOF
-OK
-EOF"
-run_silent "Ativando X11 e Root Repos" "pkg install x11-repo termux-api game-repo -y"
+# Removido termux-change-repo para evitar erros de configuração desnecessários
 run_silent "Atualizando Pacotes (Isso demora um pouco)" "pkg update -y"
+run_silent "Ativando X11 e Root Repos" "pkg install x11-repo termux-api game-repo -y"
+# Atualiza de novo para garantir que os novos repositórios sejam lidos
+run_silent "Sincronizando Novos Repositórios" "pkg update -y"
 
 # 2. LOLCAT (Visual)
 echo -ne "${AMARELO}Verificando Cores... ${RESET}"
