@@ -212,3 +212,5 @@ echo -e "\n${ROXO} [ GABRIEL-TERMUX v${VERSION} ]${RESET}\n"
 echo -e "${AMARELO}${NEGRITO}============================================${RESET}"
 echo " "
 echo "Reinicie o Termux."
+echo -e "${AMARELO}${NEGRITO}ESPERANDO.......................${RESET}"
+exit
