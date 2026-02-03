@@ -1,38 +1,37 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-# Para o script imediatamente se algum comando falhar
+# Para o script se houver erro e ignora avisos de bateria
 set -e
 
-echo "--- Verificando Condições do Sistema ---"
+echo "--- 🚀 INICIANDO INSTALAÇÃO COMPLETA (GABRIEL-TERMUX) ---"
 
-# Verifica o nível da bateria via termux-api (se disponível) ou via sistema
-BATERIA=$(termux-battery-status | grep -oP '"percentage": \K\d+' || echo "100")
-
-if [ "$BATERIA" -lt 20 ]; then
-    echo "Erro: Bateria muito baixa ($BATERIA%). Conecte ao carregador!"
-    exit 1
-fi
-
-echo "Bateria em $BATERIA%. Iniciando automação..."
-
-# Atualização de repositórios
+# 1. Atualização Geral
+echo "Atualizando repositórios..."
 pkg update -y && pkg upgrade -y
 
-# Ferramentas necessárias
-TOOLS=("python" "clang" "git" "make" "binutils" "termux-api")
-
+# 2. Base de Compilação e Python
+echo "Instalando Python e Compiladores..."
+TOOLS=("python" "python-pip" "clang" "make" "binutils" "git" "cmake")
 for tool in "${TOOLS[@]}"; do
-    if command -v $tool &> /dev/null; then
-        echo "$tool já está instalado. Pulando..."
-    else
-        echo "Instalando: $tool..."
-        pkg install "$tool" -y
-    fi
+    pkg install "$tool" -y
 done
 
-# Criar link simbólico para o gcc (apontando para o clang)
-if [ ! -f $PREFIX/bin/gcc ]; then
-    ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc
-fi
+# Criar atalho do GCC apontando para o Clang
+ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc
 
-echo "--- Tudo pronto, Gabriel! Ambiente configurado. ---"
+# 3. Pacotes de Interface Gráfica (X11)
+echo "Instalando suporte a X11 e Interface..."
+X11_PKGS=("x11-repo" "termux-x11-repo" "xterm" "tigervnc" "fluxbox")
+for pkg in "${X11_PKGS[@]}"; do
+    pkg install "$pkg" -y
+done
+
+# 4. Termux API e Ferramentas Extras
+echo "Instalando Termux-API e utilitários..."
+EXTRAS=("termux-api" "curl" "wget" "nano" "htop")
+for extra in "${EXTRAS[@]}"; do
+    pkg install "$extra" -y
+done
+
+echo "--- ✅ TUDO PRONTO! ---"
+echo "Ambiente Python, C, X11 e API configurados."
