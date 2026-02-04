@@ -6,7 +6,7 @@
 # Fusão das versões 0.5.5 e 0.4.6.1 + Novo Visual
 # ==========================================
 
-VERSION="5.6"
+VERSION="5.6.1"
 
 # --- CORES E ESTILO ---
 R="\e[31m"; G="\e[32m"; Y="\e[33m"; C="\e[36m"; B="\e[1m"; W="\e[0m"; P="\e[35m"
@@ -158,7 +158,7 @@ draw_header() {
 
     echo -e "    \033[1;33mPYTHON:\033[0m $(chk python)   \033[1;33mNODE:\033[0m $(chk node)   \033[1;33mSSH:\033[0m $(chk_ssh)"
     echo -e "    \033[1;33mCLANG :\033[0m $(chk clang)   \033[1;33mGIT :\033[0m $(chk git)    \033[1;33mX11:\033[0m $(chk termux-x11)"
-    echo -e "    \033[1;33mACODEX:\033[0m $(chk acodex-server)"
+    echo -e "    \033[1;33mACODEX:\033[0m $(chk axs)"
     echo " "
 }
 
