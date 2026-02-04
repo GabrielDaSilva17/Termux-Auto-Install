@@ -1,11 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 # ==========================================
-# GABRIEL-TERMUX ULTRA EDITION 2026 (FIX)
+# GABRIEL-TERMUX ULTRA EDITION 2026 (FINAL)
 # ==========================================
 
 # VERSÃO DO SCRIPT
-VERSION="0.5.1"
+VERSION="0.5.3"
 
 # Cores
 VERDE="\e[92m"; AMARELO="\e[33m"; CIANO="\e[36m"; VERMELHO="\e[31m"; RESET="\e[0m"; NEGRITO="\e[1m"; ROXO="\e[35m"
@@ -33,7 +33,7 @@ else
 fi
 
 echo -ne "${CIANO}Ativando Repositórios... ${RESET}"
-if pkg install x11-repo termux-api game-repo -y > /dev/null 2>&1; then
+if pkg install x11-repo termux-api game-repo tur-repo -y > /dev/null 2>&1; then
     echo -e "${VERDE}OK${RESET}"
 else
     echo -e "${VERMELHO}Erro${RESET}"
@@ -66,7 +66,7 @@ install_pkg_clean() {
 }
 
 echo -e "\n${AMARELO}>>> Instalando Ferramentas${RESET}"
-# ADICIONEI APENAS O TAILSCALE AQUI, O RESTO É O ORIGINAL
+# Lista original mantida (sem o tailscale aqui para não travar o loop)
 packages=(
     "figlet" "ncurses-utils" "git" "python" 
     "clang" "make" "cmake" "binutils" "curl" "wget" "perl" "ruby" 
@@ -78,19 +78,46 @@ packages=(
 
 for pkg in "${packages[@]}"; do install_pkg_clean "$pkg"; done
 
-# CORREÇÃO CRÍTICA: TAILSCALE (Precisa atualizar o repo antes)
-echo -ne "${CIANO}Instalando Tailscale (Fix)... ${RESET}"
-# Garante atualização do TUR Repo antes de tentar instalar
-pkg update -y > /dev/null 2>&1
+# --- INSTALAÇÃO INTELIGENTE DO TAILSCALE ---
+echo -ne "${CIANO}Configurando Rede P2P (Tailscale)... ${RESET}"
+
+# Tenta via PKG primeiro
+pkg update -y >/dev/null 2>&1
 if pkg install tailscale -y > /dev/null 2>&1; then
-    echo -e "${VERDE}Concluído${RESET}"
+    echo -e "${VERDE}OK (Via PKG)${RESET}"
 else
-    # Tentativa forçada caso falhe na primeira
-    pkg install tur-repo -y > /dev/null 2>&1
-    pkg update -y > /dev/null 2>&1
-    pkg install tailscale -y > /dev/null 2>&1
-    echo -e "${VERDE}Concluído (Forçado)${RESET}"
+    echo -e "${AMARELO}PKG falhou, baixando binário direto...${RESET}"
+    # Plano B: Download Manual
+    ARCH=$(uname -m)
+    TS_VER="1.58.2" # Versão estável
+    TS_URL=""
+    
+    if [[ "$ARCH" == "aarch64" ]]; then
+        TS_URL="https://pkgs.tailscale.com/stable/tailscale_${TS_VER}_arm64.tgz"
+    elif [[ "$ARCH" == "armv7l" || "$ARCH" == "arm" ]]; then
+        TS_URL="https://pkgs.tailscale.com/stable/tailscale_${TS_VER}_arm.tgz"
+    fi
+
+    if [ ! -z "$TS_URL" ]; then
+        wget -q "$TS_URL" -O tailscale.tgz
+        tar xzf tailscale.tgz > /dev/null 2>&1
+        # Encontra a pasta extraída
+        TS_DIR=$(find . -maxdepth 1 -type d -name "tailscale_*")
+        if [ -d "$TS_DIR" ]; then
+            cp "$TS_DIR/tailscale" "$PREFIX/bin/"
+            cp "$TS_DIR/tailscaled" "$PREFIX/bin/"
+            chmod +x "$PREFIX/bin/tailscale"
+            chmod +x "$PREFIX/bin/tailscaled"
+            rm -rf tailscale.tgz "$TS_DIR"
+            echo -e "${VERDE}OK (Manual)${RESET}"
+        else
+            echo -e "${VERMELHO}Erro ao extrair${RESET}"
+        fi
+    else
+        echo -e "${VERMELHO}Arquitetura não suportada ($ARCH)${RESET}"
+    fi
 fi
+# -------------------------------------------
 
 # 4. INSTALAÇÃO X11/SDL2
 echo -e "\n${AMARELO}>>> Configurando Interface Gráfica${RESET}"
@@ -127,7 +154,7 @@ else
     echo -e "${VERMELHO}Erro${RESET}"
 fi
 
-# Instalação do AcodeX Server (ORIGINAL MANTIDO)
+# Instalação do AcodeX Server (SEU CÓDIGO ORIGINAL)
 echo -ne "${CIANO}AcodeX - Terminal... ${RESET}"
 curl -sL https://raw.githubusercontent.com/bajrangCoder/acode-plugin-acodex/main/installServer.sh | bash > /dev/null 2>&1
 if [ $? -eq 0 ]; then 
@@ -145,7 +172,6 @@ sleep 5
 # 6. CONFIGURAÇÃO VISUAL (.bashrc)
 echo "" > ~/.bashrc
 
-# AQUI ESTAVA O ERRO DO 'ELSE'. CORRIGIDO MANTENDO A ESTRUTURA
 cat << 'GABRIEL_CONFIG_END' >> ~/.bashrc
 # --- GABRIEL CONFIG ---
 alias atualizar='pkg update && pkg upgrade -y'
@@ -154,11 +180,11 @@ alias ssh-on='sshd && ifconfig | grep inet'
 alias cls='clear'
 alias limpar='rm -rf ~/.termux/shell_history'
 
-# Atalhos
+# Atalhos Originais
 alias atualizar-setup='curl -fsSL https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh | bash'
 alias acodex='acodex-server'
 
-# Atalho NOVO para Rede Privada (Tailscale)
+# Atalho Rede Privada
 alias rede-on='sudo tailscale up'
 alias rede-status='tailscale status'
 
@@ -178,7 +204,7 @@ draw_banner() {
 }
 draw_banner
 
-# 2. STATUS (RESTAUREI O ACODEX/AXS QUE EU TINHA TIRADO)
+# 2. STATUS (ACODEX MANTIDO)
 check() {
     if command -v $1 &> /dev/null; then
         echo -e "\033[1;32mON\033[0m"
@@ -192,7 +218,7 @@ echo -e "    \033[1;33mCLANG :\033[0m $(check clang)   \033[1;33mGIT :\033[0m $(
 echo -e "    \033[1;33mACODEX:\033[0m $(check axs)    \033[1;33mREDE:\033[0m $(check tailscale)"
 echo " "
 
-# 3. VERIFICADOR DE ATUALIZAÇÃO (CORRIGIDO PARA APARECER NA TELA)
+# 3. VERIFICADOR DE ATUALIZAÇÃO (CORRIGIDO PARA APARECER)
 check_update() {
     REMOTE_URL="https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh"
     LOCAL_VER=$(cat ~/.gabriel_version 2>/dev/null || echo "0")
@@ -208,7 +234,6 @@ check_update() {
          echo -e "Digite \033[1;33matualizar-setup\033[0m para baixar.\n"
     fi
 }
-# Removi o >/dev/null para você ver a mensagem
 check_update
 
 # 4. ANDROID INFO
@@ -226,7 +251,6 @@ sleep 15
 clear
 echo -e "${VERDE}${NEGRITO}INSTALAÇÃO COMPLETA! v$VERSION${RESET}"
 echo -e "${VERDE}[✓]${RESET} Script Blindado"
-echo -e "${VERDE}[✓]${RESET} code-server "
 echo -e "${VERDE}[✓]${RESET} Rede P2P (Tailscale)"
 
 echo -e "${AMARELO}${NEGRITO}============================================${RESET}"
@@ -239,84 +263,7 @@ echo -e "${AMARELO}${NEGRITO}ESPERANDO.......................${RESET}"
 sleep 10
 cls
 
-source ~/.bashrc
-
-
-
-/dev/null 2>&1; then
-    echo -e "${VERDE}OK${RESET}"
-else
-    echo -e "${VERMELHO}Erro${RESET}"
-fi
-
-echo -ne "${CIANO}Instalando Speedtest... ${RESET}"
-if pip install speedtest-cli >/dev/null 2>&1; then
-    echo -e "${VERDE}OK${RESET}"
-else
-    echo -e "${VERMELHO}Erro${RESET}"
-fi
-
-# Instalação do AcodeX Server (ORIGINAL MANTIDO)
-echo -ne "${CIANO}AcodeX - Terminal... ${RESET}"
-curl -sL https://raw.githubusercontent.com/bajrangCoder/acode-plugin-acodex/main/installServer.sh | bash > /dev/null 2>&1
-if [ $? -eq 0 ]; then 
-    echo -e "${VERDE}OK${RESET}"
-else 
-    echo -e "${VERMELHO}Erro (Tente manual)${RESET}"
-fi
-
-
-sshd >/dev/null 2>&1
-ln -sf $PREFIX/bin/clang $PREFIX/bin/gcc >/dev/null 2>&1
-
-sleep 5
-
-# 6. CONFIGURAÇÃO VISUAL (.bashrc)
-echo "" > ~/.bashrc
-
-# AQUI ESTAVA O ERRO DO 'ELSE'. CORRIGIDO MANTENDO A ESTRUTURA
-cat << 'GABRIEL_CONFIG_END' >> ~/.bashrc
-# --- GABRIEL CONFIG ---
-alias atualizar='pkg update && pkg upgrade -y'
-alias fechar='pkill termux-x11'
-alias ssh-on='sshd && ifconfig | grep inet'
-alias cls='clear'
-alias limpar='rm -rf ~/.termux/shell_history'
-
-# Atalhos
-alias atualizar-setup='curl -fsSL https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh | bash'
-alias acodex='acodex-server'
-
-# Atalho NOVO para Rede Privada (Tailscale)
-alias rede-on='sudo tailscale up'
-alias rede-status='tailscale status'
-
-clear
-
-# 1. BANNER
-draw_banner() {
-    if command -v lolcat &> /dev/null; then
-        echo "╔═══════════════════════════════════════════════════════════╗" | lolcat
-        figlet -f slant "   GABRIEL   " | lolcat
-        echo "╚═══════════════════════════════════════════════════════════╝" | lolcat
-    else
-        echo "-------------------------------------------------------------"
-        figlet -f slant "   GABRIEL   "
-        echo "-------------------------------------------------------------"
-    fi
-}
-draw_banner
-
-# 2. STATUS (RESTAUREI O ACODEX/AXS QUE EU TINHA TIRADO)
-check() {
-    if command -v $1 &> /dev/null; then
-        echo -e "\033[1;32mON\033[0m"
-    else
-        echo -e "\033[1;31mOFF\033[0m"
-    fi
-}
-
-echo -e "    \033[1;33mPYTHON:\033[0m $(check python)   \033[1;33mNODE:\033[0m $(check node)   \033[1;33mSSH:\033[0m $(check sshd)"
+source ~/.bashrco -e "    \033[1;33mPYTHON:\033[0m $(check python)   \033[1;33mNODE:\033[0m $(check node)   \033[1;33mSSH:\033[0m $(check sshd)"
 echo -e "    \033[1;33mCLANG :\033[0m $(check clang)   \033[1;33mGIT :\033[0m $(check git)    \033[1;33mX11:\033[0m $(check termux-x11)"
 echo -e "    \033[1;33mACODEX:\033[0m $(check axs)    \033[1;33mREDE:\033[0m $(check tailscale)"
 echo " "
