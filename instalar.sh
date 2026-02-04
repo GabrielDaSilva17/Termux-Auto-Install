@@ -121,7 +121,7 @@ alias ssh-on='sshd && echo "SSH Iniciado em:" && ifconfig | grep "inet " | grep 
 alias cls='clear'
 alias limpar='rm -rf ~/.termux/shell_history'
 alias atualizar-setup='curl -fsSL https://raw.githubusercontent.com/GabrielDaSilva17/Termux-Auto-Install/main/instalar.sh | bash'
-alias acodex='acodex-server'
+alias acodex='axs'
 alias rede-on='sudo tailscale up'
 alias rede-status='tailscale status'
 alias code='code-server'
@@ -169,7 +169,7 @@ draw_header
 neofetch --ascii_distro android --disable packages shell term resolution --color_blocks off
 
 # 4. Prompt Personalizado
-export PS1='\[\e[1;32m\]Gabriel\[\e[0m\]@\[\e[1;34m\]Termux\[\e[0m\]:\[\e[1;33m\]\w\[\e[0m\] $ '
+export PS1='\[\e[1;32m\]ultra5.6\[\e[0m\]@\[\e[1;34m\]Termux\[\e[0m\]:\[\e[1;33m\]\w\[\e[0m\] $ '
 
 EOF
 
