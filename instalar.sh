@@ -71,7 +71,7 @@ packages=(
     "clang" "make" "cmake" "binutils" "curl" "wget" "perl" "ruby" 
     "php" "nodejs" "bash" "nano" "zip" "unzip" "openssl" "openssh" 
     "zsh" "ffmpeg" "htop" "screen" "jq" "rsync" "tree" "termux-api" 
-    "neofetch" "cmatrix" "cowsay" "fortune" "sl" "ranger" "xorgproto"
+    "neofetch" "cmatrix" "cowsay" "fortune" "sl" "ranger" "xorgproto" "openvpn"
     "proot" "proot-distro" "tsu" "man" "vim" "proxychains-ng" "tur-repo" "code-server"
 )
 
