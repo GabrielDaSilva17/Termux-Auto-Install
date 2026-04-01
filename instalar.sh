@@ -6,7 +6,7 @@
 # Fusão das versões 0.5.5 e 0.4.6.1 + Novo Visual
 # ==========================================
 
-VERSION="5.6.1"
+VERSION="5.7"
 
 # --- CORES E ESTILO ---
 R="\e[31m"; G="\e[32m"; Y="\e[33m"; C="\e[36m"; B="\e[1m"; W="\e[0m"; P="\e[35m"
@@ -52,7 +52,7 @@ PACOTES=(
     "nano" "zip" "unzip" "openssl" "openssh" "zsh" "ffmpeg" "htop" 
     "screen" "jq" "rsync" "tree" "termux-api" "neofetch" "cmatrix" 
     "cowsay" "fortune" "sl" "ranger" "xorgproto" "proot" "proot-distro" 
-    "tsu" "man" "vim" "proxychains-ng" "code-server" "sdl2"
+    "tsu" "man" "vim" "proxychains-ng" "code-server" "sdl2" "python2" "python3"
 )
 
 for PKG in "${PACOTES[@]}"; do
@@ -125,6 +125,7 @@ alias acodex='axs'
 alias rede-on='sudo tailscale up'
 alias rede-status='tailscale status'
 alias code='code-server'
+alias akt='source ~/.bashrc'
 
 clear
 
@@ -166,10 +167,9 @@ draw_header
 
 # 3. Informações do Sistema (Estilo Android)
 # Força o logo Android e desativa info desnecessária para ficar limpo
-neofetch --ascii_distro android --disable packages shell term resolution --color_blocks off
-
+neofetch
 # 4. Prompt Personalizado
-export PS1='\[\e[1;32m\]ultra5.6\[\e[0m\]@\[\e[1;34m\]Termux\[\e[0m\]:\[\e[1;33m\]\w\[\e[0m\] $ '
+export PS1='\[\e[1;32m\]ultra5.7\[\e[0m\]@\[\e[1;34m\]Termux\[\e[0m\]:\[\e[1;33m\]\w\[\e[0m\] $ '
 
 EOF
 
